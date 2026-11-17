@@ -59,7 +59,7 @@ npm run build
 | 数据标签 | `tag` | 标签定义 | 标签编号、标签名称、计算表达式 |
 | 数据导出 | `export` | 导出任务 | 任务编号、查询SQL、导出格式 |
 | 数据分享 | `share` | 分享链接 | 链接编号、目标数据集、访问密码 |
-| 定时任务 | `schedule` | 调度配置 | 配置编号、关联任务、调度表达式 |
+| 定时任务 | `schedule` | 调度配置 / 调度运行记录 | 配置编号、关联任务、调度表达式；运行记录按业务窗口留痕 |
 
 ## 约定
 
@@ -68,6 +68,15 @@ npm run build
 - 字段、状态、动作与流转目标集中在 `frontend/src/data/modules.ts`；示例数据在
   `frontend/src/data/seed.ts`。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
+- 定时任务的失败窗口补偿与重试去重在 `frontend/src/api/schedule/`：
+  - `schedule-engine.ts` 为纯逻辑（选窗、重试上限与超时终态合并判断、去重键、并发闸门、共用计划构建）；
+  - `schedule-service.ts` 是「调度运行记录表」（localStorage 键 `scheduleRun`）唯一更新点，任何动作都只在末尾调用一次 `saveRows`，一次提交只写一份表；
+  - 失败补偿只追加「待补偿」窗口，已完成/运行中/终态失败窗口不会重复生成；`窗口来源`（定时调度/失败补偿/连续补跑）与`冲突处理`全程留痕，归档文件同时包含定时任务、调度配置快照与调度运行记录数据表。
+- 调度域验收脚本（Node 原生 TS 直跑，不依赖浏览器）：
+  ```bash
+  cd frontend
+  npm run verify:schedule
+  ```
 - 想回到初始数据：清掉浏览器里 `data-explore-studio:entries` 这一项，或调用 `resetModule(模块)`。
 
 领域：数据工程

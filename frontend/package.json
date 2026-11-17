@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "verify:schedule": "node --import ./tools/alias-register.mjs --experimental-strip-types tools/verify-schedule.ts"
   },
   "dependencies": {
     "pinia": "^2.1.7",
